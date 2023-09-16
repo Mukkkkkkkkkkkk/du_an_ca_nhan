@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Giỏ hàng</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <style>
+    .product {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .product .title {
+      font-weight: bold;
+    }
+    .cart {
+      margin-top: 20px;
+    }
+    .cart .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .cart .item .quantity {
+      width: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Giỏ hàng</h1>
+
+    <div id="product-list">
+      <div class="product">
+        <h3 class="title">Sản phẩm 1</h3>
+        <p class="price">Giá: $10</p>
+        <button class="btn btn-primary add-to-cart">Thêm vào giỏ hàng</button>
+      </div>
+
+      <div class="product">
+        <h3 class="title">Sản phẩm 2</h3>
+        <p class="price">Giá: $20</p>
+        <button class="btn btn-primary add-to-cart">Thêm vào giỏ hàng</button>
+      </div>
+
+      <!-- Thêm các sản phẩm khác vào danh sách -->
+    </div>
+
+    <div class="cart">
+      <h2>Giỏ hàng của bạn</h2>
+      <div id="cart-items">
+        <!-- Các sản phẩm trong giỏ hàng sẽ được thêm vào đây -->
+      </div>
+      <button class="btn btn-primary checkout">Thanh toán</button>
+    </div>
+  </div>
+
+  <script>
+    // Lấy danh sách nút "Thêm vào giỏ hàng"
+    var addToCartButtons = document.querySelectorAll('.add-to-cart');
+
+    // Danh sách các sản phẩm trong giỏ hàng
+    var cartItems = [];
+
+    // Kiểm tra xem đã có giỏ hàng trong LocalStorage hay chưa
+    if (localStorage.getItem('cartItems')) {
+      // Khôi phục danh sách sản phẩm từ LocalStorage
+      cartItems = JSON.parse(localStorage.getItem('cartItems'));
+
+      // Cập nhật giao diện giỏ hàng
+      updateCartUI();
+    }
+
+    // Xử lý sự kiện khi nhấn nút "Thêm vào giỏ hàng"
+    addToCartButtons.forEach(function(button) {
+      button.addEventListener('click', function() {
+        var product = button.parentNode;
+        var title = product.querySelector('.title').textContent;
+        var price = product.querySelector('.price').textContent;
+
+        // Tạo một đối tượng sản phẩm mới
+        var item = {
+          title: title,
+          price: price,
+          quantity: 1
+        };
+
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        var existingItem = cartItems.find(function(cartItem) {
+          return cartItem.title === item.title;
+        });
+
+        if (existingItem) {
+          // Nếu sản phẩm đã có trong giỏ hàng, tăng số lượng lên 1
+          existingItem.quantity++;
+        } else {
+          // Nếu sản phẩm chưa có trong giỏ hàng, thêm vào danh sách
+          cartItems.push(item);
+        }
+
+        // Lưu trữ danh sách sản phẩm vào LocalStorage
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+        // Cập nhật giao diện giỏ hàng
+        updateCartUI();
+      });
+    });
+
+    // Cập nhật giao diện giỏ hàng
+    function updateCartUI() {
+      var cartItemsContainer = document.getElementById('cart-items');
+      cartItemsContainer.innerHTML = '';
+
+      cartItems.forEach(function(item) {
+        var cartItemElement = document.createElement('div');
+        cartItemElement.classList.add('item');
+        cartItemElement.innerHTML = `
+          <span class="title">${item.title}</span>
+          <span class="price">${item.price}</span>
+          <input type="number" class="quantity" value="${item.quantity}" min="1">
+          <button class="btn btn-danger remove-item">Xóa</button>
+        `;
+
+        cartItemsContainer.appendChild(cartItemElement);
+      });
+    }
+
+    // Xử lý sự kiện khi nhấn nút "Xóa"
+    document.addEventListener('click', function(event) {
+      if (event.target && event.target.classList.contains('remove-item')) {
+        var itemElement = event.target.parentNode;
+        var title = itemElement.querySelector('.title').textContent;
+
+        // Xóa sản phẩm khỏi giỏ hàng
+        cartItems = cartItems.filter(function(item) {
+          return item.title !== title;
+        });
+
+        // Lưu trữ danh sách sản phẩm vào LocalStorage
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+        // Cập nhật giao diện giỏ hàng
+        updateCartUI();
+      }
+    });
+
+    // Xử lý sự kiện khi thay đổi số lượng sản phẩm
+    document.addEventListener('change', function(event) {
+      if (event.target && event.target.classList.contains('quantity')) {
+        var itemElement = event.target.parentNode;
+        var title = itemElement.querySelector('.title').textContent;
+        var quantity = parseInt(event.target.value);
+
+        // Cập nhật số lượng của sản phẩm trong giỏ hàng
+        cartItems.forEach(function(item) {
+          if (item.title === title) {
+            item.quantity = quantity;
+          }
+        });
+
+        // Lưu trữ danh sách sản phẩm vào LocalStorage
+        localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      }
+    });
+
+    // Xử lý sự kiện khi nhấn nút "Thanh toán"
+    var checkoutButton = document.querySelector('.checkout');
+    checkoutButton.addEventListener('click', function() {
+      // Gửi thông tin giỏ hàng lên server để xử lý thanh toán
+      // ...
+
+      // Sau khi xử lý thanh toán thành công, xoá danh sách sản phẩm trong giỏ hàng
+      cartItems = [];
+
+      // Xóa lưu trữ giỏ hàng trong LocalStorage
+      localStorage.removeItem('cartItems');
+
+      // Cập nhật giao diện giỏ hàng
+      updateCartUI();
+    });
+  </script>
+</body>
+</html>

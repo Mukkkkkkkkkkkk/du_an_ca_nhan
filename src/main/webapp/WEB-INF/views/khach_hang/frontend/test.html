@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Button Giỏ hàng</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <style>
+    .cart-button {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .cart-count {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 12px;
+      background-color: red;
+      color: white;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 20px;
+    }
+
+    .cart-window {
+      position: absolute;
+      top: 30px;
+      right: 0;
+      z-index: 999;
+      width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    .cart-window.active {
+      display: block;
+    }
+
+    .cart-window ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .cart-window li {
+      margin-bottom: 5px;
+    }
+
+    .cart-window .btn {
+      width: 100%;
+    }
+  </style>
+</head>
+<body style="padding-left:500px ;">
+  <div class="cart-button " >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+      <path d="M3.9 5L5 9.1H19.1L20.1 5H3.9M11 19C9.9 19 9 18.1 9 17C9 15.9 9.9 15 11 15C12.1 15 13 15.9 13 17C13 18.1 12.1 19 11 19M18 15V17H20V15H18M6 15V17H8V15H6Z"></path>
+    </svg>
+    <span class="cart-count"></span>
+    <div id="cart-window" class="cart-window">
+      <ul id="cart-items"></ul>
+      <button type="button" class="btn btn-primary">Thanh toán</button>
+    </div>
+  </div>
+
+  <script>
+    // Lấy số lượng sản phẩm từ LocalStorage
+    function getCartItemCount() {
+      var cartItems = JSON.parse(localStorage.getItem('cartItems'));
+      if (cartItems && Array.isArray(cartItems)) {
+        return cartItems.length;
+      }
+      return 0;
+    }
+
+    // Cập nhật số lượng sản phẩm trong button giỏ hàng
+    function updateCartItemCount() {
+      var cartCount = document.querySelector('.cart-count');
+      var itemCount = getCartItemCount();
+      cartCount.textContent = itemCount > 9 ? '9+' : itemCount.toString();
+      cartCount.style.display = itemCount > 0 ? 'block' : 'none';
+    }
+
+    // Hiển thị danh sách sản phẩm trong giỏ hàng
+    function showCartItems() {
+      var cartItems = JSON.parse(localStorage.getItem('cartItems'));
+      var cartItemList = document.getElementById('cart-items');
+      cartItemList.innerHTML = '';
+
+      if (cartItems && Array.isArray(cartItems)) {
+        cartItems.forEach(function(item) {
+          var li = document.createElement('li');
+          li.textContent = item.name;
+          cartItemList.appendChild(li);
+        });
+      }
+    }
+
+    // Hiển thị cửa sổ giỏ hàng
+    function showCartWindow() {
+      var cartWindow = document.getElementById('cart-window');
+      cartWindow.classList.toggle('active');
+      showCartItems();
+    }
+
+    // Đăng ký sự kiện click cho button giỏ hàng
+    var cartButton = document.querySelector('.cart-button');
+    cartButton.addEventListener('click', showCartWindow);
+
+    // Cập nhật số lượng sản phẩm ban đầu
+    updateCartItemCount();
+  </script>
+</body>
+</html>
